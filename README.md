@@ -60,7 +60,7 @@ Create a file named **`include.yaml`** in your project directory to specify file
 ### **Example `include.yaml`**
 ```yaml
 include:
-  - "**/*.py"       # Recursively include all Python files
+  - "*.py"       # Recursively include all Python files
   - "mock_data/**/*" # Include all files in mock_data/
 
 exclude:
