@@ -8,30 +8,38 @@ from lamcoc.file_selector import get_files_to_include, get_library_files
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-def create_zip(project_root):
+def create_zip(project_dir, output_dir, config_dir, config_file, zip_file, **kwargs):
     """Create a ZIP file containing selected files, placing libraries at ZIP root if specified."""
 
-    logging.info("Starting to create the Lambda ZIP package...")
+    logging.info(f"📂 Project directory: {project_dir}")
+    logging.info(f"📂 Output directory: {output_dir}")
+    logging.info(f"📂 Config file: {os.path.join(config_dir, config_file)}")
+    logging.info(f"📦 ZIP file name: {zip_file}")
 
     try:
-        include_patterns, exclude_patterns, libraries = load_config(project_root)
+        # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
 
-        files = get_files_to_include(project_root, include_patterns, exclude_patterns)
+        # Load config from the specified directory and file
+        config_path = os.path.join(config_dir, config_file)
+        include_patterns, exclude_patterns, libraries = load_config(config_path)
+
+        files = get_files_to_include(project_dir, include_patterns, exclude_patterns)
         lib_files = {}
 
         # Process libraries only if they are specified
         if libraries:
             logging.info("Including libraries in the ZIP package...")
-            lib_files = get_library_files(project_root, libraries)
+            lib_files = get_library_files(project_dir, libraries)
         else:
             logging.info("No libraries specified, skipping library inclusion.")
 
-        output_zip = os.path.join(project_root, "lambda.zip")
+        output_zip = os.path.join(output_dir, zip_file)
 
         with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Add regular files (preserve structure)
             for file in files:
-                zipf.write(os.path.join(project_root, file), file)
+                zipf.write(os.path.join(project_dir, file), file)
 
             # Add library files (move to ZIP root)
             for abs_path, zip_root_path in lib_files.items():

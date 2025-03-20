@@ -8,23 +8,30 @@ from lamcoc.file_selector import get_files_to_include, get_library_files
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-def generate_plan(project_root):
+def generate_plan(project_dir, output_dir, config_dir, config_file, zip_file, **kwargs):
     """Generate a plan of files to be included in the ZIP, ensuring exclusions are respected."""
 
-    logging.info("Starting to generate the ZIP plan...")
+    logging.info(f"📂 Project directory: {project_dir}")
+    logging.info(f"📂 Output directory: {output_dir}")
+    logging.info(f"📂 Config file: {os.path.join(config_dir, config_file)}")
+    logging.info(f"📦 ZIP file name: {zip_file}")
 
     try:
-        # Load config
-        include_patterns, exclude_patterns, libraries = load_config(project_root)
+        # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Load config from the specified directory and file
+        config_path = os.path.join(config_dir, config_file)
+        include_patterns, exclude_patterns, libraries = load_config(config_path)
 
         # Get included files (excluding based on patterns)
-        files = get_files_to_include(project_root, include_patterns, exclude_patterns)
+        files = get_files_to_include(project_dir, include_patterns, exclude_patterns)
 
-        # If libraries exist, process them; otherwise, skip
+        # Process libraries if specified
         lib_files = {}
         if libraries:
             logging.info("Processing libraries for inclusion in ZIP...")
-            all_lib_files = get_library_files(project_root, libraries)
+            all_lib_files = get_library_files(project_dir, libraries)
 
             # Apply exclusions to libraries as well
             lib_files = {
@@ -36,8 +43,8 @@ def generate_plan(project_root):
             logging.info("No libraries specified, skipping library inclusion.")
 
         # Define output files
-        plan_file = os.path.join(project_root, "plan_to_zip.txt")
-        final_plan_file = os.path.join(project_root, "planned_zip.txt")
+        plan_file = os.path.join(output_dir, "plan_to_zip.txt")
+        final_plan_file = os.path.join(output_dir, "planned_zip.txt")
 
         # Save plan_to_zip.txt (original paths before modification)
         with open(plan_file, "w") as f:
