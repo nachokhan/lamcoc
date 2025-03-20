@@ -10,6 +10,8 @@ def get_files_to_include(project_root, include_patterns, exclude_patterns):
     """Find files matching include patterns and remove those matching exclude patterns."""
     all_files = set()
 
+    logging.info("Processing files in folder: " + project_root)
+
     try:
         # Traverse project directory
         for root, _, files in os.walk(project_root):
@@ -34,6 +36,8 @@ def get_library_files(project_root, libraries):
     """Get all files from library directories while preserving their relative paths."""
     lib_files = {}
 
+    logging.info("Processing libraries in folder: " + project_root)
+    logging.info("Libraries to process: " + str(libraries))
     try:
         for lib_path in libraries:
             abs_lib_path = os.path.join(project_root, lib_path)
